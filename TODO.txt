@@ -1,1 +1,2 @@
-Add hash lookup data structure to page.py for keys.
+Update Page with proper key/pointer scheme.
+Add methods to Page for getting individual entry values as well as all entries.
