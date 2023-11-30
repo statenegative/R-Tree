@@ -28,16 +28,20 @@ class Page:
     
     # Inserts an entry into the page.
     #
-    # entry: The entry to insert. Either a point or a page, depending on whether this page is a leaf.
-    def add(self, entry: typing.Union[Point, "Page"]):
+    # key: The key to insert. Either a point or a page, depending on whether this page is a leaf.
+    # val: The value to insert. If this page isn't a leaf, val should be None.
+    def add(self, key: typing.Union[Point, "Page"], val: typing.Any=None):
         # Add entry
-        self.entries.append(entry)
+        self.entries.append((key, val))
 
         # Update bounding box
         if self.leaf:
-            self.bounding_box.fit_point(entry)
+            self.bounding_box.fit_point(key)
         else:
-            self.bounding_box.fit_box(entry)
+            self.bounding_box.fit_box(key.bounding_box)
+    
+    def __setitem__(self, key: typing.Union[Point, "Page"], val: typing.Any=None):
+        self.add(key, val)
 
     # Gets the number of entries in this page.
     def __len__(self) -> int:
@@ -45,4 +49,11 @@ class Page:
     
     # Creates a string representation of this page.
     def __str__(self) -> str:
-        return f"Page({self.bounding_box}: {self.entries})"
+        data = []
+        for entry in self.entries:
+            if entry[1]:
+                data.append(entry)
+            else:
+                data.append(entry[0])
+
+        return f"Page({self.bounding_box}: {data})"
