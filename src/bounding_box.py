@@ -13,9 +13,8 @@ class BoundingBox:
     def __init__(self, lower: Point, upper: Point):
         if lower.shape != upper.shape:
             raise ValueError(f"Shape mismatch: lower bound has shape {lower.shape}, but upper bound has shape {upper.shape}.")
-        self.lower = lower
-        self.upper = upper
-        self.shape = lower.shape
+        self.lower = np.array(lower)
+        self.upper = np.array(upper)
     
     # Expands the bounding box to contain the given point.
     #
@@ -38,11 +37,30 @@ class BoundingBox:
         intersects_lower = (self.lower <= box.lower) & (box.lower <= self.upper)
         intersects_upper = (self.lower <= box.upper) & (box.upper <= self.upper)
         return all(intersects_lower | intersects_upper)
+    
+    # Calculates the area of this bounding box.
+    def area(self) -> float:
+        return np.prod(self.upper - self.lower)
+    
+    # Calculates the amount the area of this bounding box would increase by if point
+    # were added to it.
+    #
+    # point: The point to test.
+    # Returns the increase in area.
+    def test_enlargement(self, point: Point) -> float:
+        old_area = self.area()
+
+        # Calculate new lower and upper bounds
+        lower = np.minimum(self.lower, point)
+        upper = np.maximum(self.upper, point)
+        new_area = np.prod(upper - lower)
+
+        return new_area - old_area
 
     # Checks if a point is contained within this bounding box.
     #
     # point: The point to check.
-    def contains_point(self, point: Point) -> bool:
+    def __contains__(self, point: Point) -> bool:
         return all((self.lower <= point) & (point <= self.upper))
     
     # Creates a string representation of this bounding box.

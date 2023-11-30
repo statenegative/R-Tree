@@ -1,5 +1,2 @@
-Update Page with proper key/pointer scheme.
 Add methods to Page for getting individual entry values as well as all entries.
-
-
-If we could have a meeting at some point for you to explain what you have done, and then what you need help with that would be best for me -- Cooper !!!
+Add total size parameter to page to allow for better "least enlargement" heuristic.

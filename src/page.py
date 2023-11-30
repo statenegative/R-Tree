@@ -40,6 +40,35 @@ class Page:
         else:
             self.bounding_box.fit_box(key.bounding_box)
     
+    # Gets the child page that would require the least enlargement if point were inserted.
+    #
+    # point: The point to test for insertion.
+    # Returns the page, or None if there are no child pages.
+    def least_enlargement(self, point: Point) -> typing.Optional["Page"]:
+        if self.leaf or len(self) == 0:
+            return []
+
+        # Find all children that this point is contained within
+        min_enlargement = np.inf
+        min_page = self.entries[0][0]
+        for page, _ in self.entries[1:]:
+            # If an exact match is found, return immediately
+            if point in page.bounding_box:
+                return page
+            # Calculate increase in area
+            area = page.bounding_box.test_enlargement(point)
+            if area < min_enlargement:
+                min_enlargement = area
+                min_page = page
+        
+        return min_page
+    
+    # Splits this page, returning the newly split page.
+    #
+    # Returns a new page containing the entries that have been removed from this page.
+    def split(self) -> "Page":
+        pass
+    
     def __setitem__(self, key: typing.Union[Point, "Page"], val: typing.Any=None):
         self.add(key, val)
 
