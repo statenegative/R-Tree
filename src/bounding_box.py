@@ -26,7 +26,7 @@ class BoundingBox:
     # Expands the bounding box to fully contain the given bounding box.
     #
     # box: The box to contain.
-    def fit_boxes(self, box: "BoundingBox"):
+    def fit_box(self, box: "BoundingBox"):
         self.lower = np.minimum(self.lower, box.lower)
         self.upper = np.maximum(self.upper, box.upper)
     
@@ -34,10 +34,10 @@ class BoundingBox:
     #
     # other: The other bounding box to check.
     def intersects(self, other: "BoundingBox") -> bool:
-        intersects_lower = (self.lower <= box.lower) & (box.lower <= self.upper)
-        intersects_upper = (self.lower <= box.upper) & (box.upper <= self.upper)
+        intersects_lower = (self.lower >= other.lower) & (self.lower <= other.upper)
+        intersects_upper = (self.upper >= other.upper) & (self.upper <= other.upper)
         return all(intersects_lower | intersects_upper)
-    
+
     # Calculates the area of this bounding box.
     def area(self) -> float:
         return np.prod(self.upper - self.lower)

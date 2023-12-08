@@ -2,7 +2,7 @@
 import numpy as np
 import numpy.typing as npt
 import typing
-
+from bounding_box import BoundingBox
 from page import Page
 
 Point = npt.NDArray
@@ -12,7 +12,7 @@ class R_Tree:
     #
     # M: The number of entries a page can hold.
     # shape: The shape of the keys in this R-tree.
-    def __init__(M: int, shape: int | tuple[int,...]=(2,)):
+    def __init__(self, M: int, shape: int | tuple[int,...]=(2,)):
         if isinstance(shape, int):
             self.shape = (shape,)
         
@@ -57,8 +57,8 @@ class R_Tree:
             return len(page) > self.M
 
         # Determine child page to traverse
-        # Since this page isn't a leaf, least_enlargement is guaranteed to return a value
         child = page.least_enlargement(point)
+        # Since this page isn't a leaf, least_enlargement is guaranteed to return a value
         split = self.__add(child, key, val)
         
         # Handle splitting
@@ -66,3 +66,53 @@ class R_Tree:
             new_child = child.split()
             page.add(new_child)
             return len(page) > self.M
+        
+    def search(self, radius, origin):
+
+        #this doesnt make help me
+        upper = origin + radius
+        lower = origin - radius
+        box = BoundingBox(lower, upper)
+        return self.__search(self.root,box,origin,radius)
+
+
+        #private workhorse function
+    def __search(self, page: Page, box, origin, radius):
+        if page.leaf:
+            ret = []
+            for point,_ in page.entries:
+                if R_Tree.__dist(origin, point) <= radius:
+                    ret.append(point)
+            return ret
+                   
+        #if it intersects run through all its children
+        ret = []
+        if page.bounding_box.intersects(box):
+            for x,_ in page.entries:
+                if x.bounding_box.intersects(box):
+                    ret += self.__search(x, box,origin,radius)
+        return ret
+        
+        
+   
+    def __dist(a,b):
+        return np.linalg.norm(b-a)
+
+def main():
+    t = R_Tree(2)
+    p1 = Page()
+    p2 = Page(leaf = True)
+    p3 = Page(leaf = True)
+    p2.add(np.array([1,1]))
+    p2.add(np.array([2,2]))
+    p3.add(np.array([3,4]))
+    p3.add(np.array([4,3]))
+
+    p1.add(p3)
+    p1.add(p2)
+    t.root = p1
+    print(t.search(3, np.array([1.5,1.5])))
+    
+    
+if __name__ == "__main__":
+    main()
