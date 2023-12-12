@@ -1,4 +1,5 @@
 # R-tree data structure.
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import typing
@@ -14,7 +15,7 @@ class R_Tree:
     # shape: The shape of the keys in this R-tree.
     def __init__(self, M: int, shape: int | tuple[int,...]=(2,)):
         if isinstance(shape, int):
-            self.shape = (shape,)
+            shape = (shape,)
         
         self.M = M
         self.shape = shape
@@ -59,6 +60,29 @@ class R_Tree:
             new_child = child.split()
             page.add(new_child)
             return len(page) > self.M
+    
+    # Displays a 2D visualization of the R-tree.
+    def show2D(self):
+        if self.shape == (2,):
+            self.__show2D(self.root)
+            plt.show()
+    
+    # Recursive backend of show2D
+    def __show2D(self, page: Page):
+        # Display bounding box
+        bb = page.bounding_box
+        plt.plot((bb.lower[0], bb.upper[0]), (bb.lower[1], bb.lower[1]), 'k-')
+        plt.plot((bb.lower[0], bb.lower[0]), (bb.lower[1], bb.upper[1]), 'k-')
+        plt.plot((bb.upper[0], bb.upper[0]), (bb.lower[1], bb.upper[1]), 'k-')
+        plt.plot((bb.lower[0], bb.upper[0]), (bb.upper[1], bb.upper[1]), 'k-')
+
+        # Base case
+        if page.leaf:
+            for point, _ in page.entries:
+                plt.plot(point[0], point[1], 'ko')
+        else:
+            for child, _ in page.entries:
+                self.__show2D(child)
     
     def __setitem__(self, key: Point, val: typing.Any=None):
         self.add(key, val)
