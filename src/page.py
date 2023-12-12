@@ -18,7 +18,7 @@ class Page:
     def __init__(self, shape: int | tuple[int,...]=(2,), leaf: bool=False):
         # Convert shape to tuple
         if isinstance(shape, int):
-            self.shape = (shape,)
+            shape = (shape,)
         
         # Create bounding box and entries list
         self.shape = shape
