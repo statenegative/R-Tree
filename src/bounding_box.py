@@ -58,7 +58,7 @@ class BoundingBox:
     #
     # box: The box to test.
     # Returns the new theoretical area.
-    def test_box_enlargement(self, box: BoundingBox) -> float:
+    def test_box_enlargement(self, box: "BoundingBox") -> float:
         lower = np.minimum(self.lower, box.lower)
         upper = np.maximum(self.upper, box.upper)
         return np.prod(upper - lower)

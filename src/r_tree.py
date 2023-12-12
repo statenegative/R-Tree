@@ -26,6 +26,7 @@ class R_Tree:
     # key: The key to insert.
     # val: The value to insert.
     def add(self, key: Point, val: typing.Any=None):
+        self.size += 1
         split = self.__add(self.root, key, val)
 
         # Handle creating new root
@@ -36,14 +37,6 @@ class R_Tree:
             self.root.add(old_root)
             self.root.add(new_child)
 
-    
-    def __setitem__(self, key: Point, val: typing.Any=None):
-        self.add(key, val)
-    
-    # Gets the total number of entries in the R-tree.
-    def __len__(self) -> int:
-        return self.size
-    
     # Internal recursive add function to handle splitting.
     #
     # page: The page being recursively processed.
@@ -57,7 +50,7 @@ class R_Tree:
             return len(page) > self.M
 
         # Determine child page to traverse
-        child = page.least_enlargement(point)
+        child = page.least_enlargement(key)
         # Since this page isn't a leaf, least_enlargement is guaranteed to return a value
         split = self.__add(child, key, val)
         
@@ -66,7 +59,17 @@ class R_Tree:
             new_child = child.split()
             page.add(new_child)
             return len(page) > self.M
-        
+    
+    def __setitem__(self, key: Point, val: typing.Any=None):
+        self.add(key, val)
+    
+    # Gets the total number of entries in the R-tree.
+    def __len__(self) -> int:
+        return self.size
+    
+    def __str__(self) -> str:
+        return f"R_Tree({self.size}, {self.root})"
+    
     def search(self, radius, origin):
 
         #this doesnt make help me
@@ -76,7 +79,7 @@ class R_Tree:
         return self.__search(self.root,box,origin,radius)
 
 
-        #private workhorse function
+    # Private workhorse function
     def __search(self, page: Page, box, origin, radius):
         if page.leaf:
             ret = []
@@ -85,17 +88,16 @@ class R_Tree:
                     ret.append(point)
             return ret
                    
-        #if it intersects run through all its children
+        # If it intersects run through all its children
         ret = []
         if page.bounding_box.intersects(box):
             for x,_ in page.entries:
                 if x.bounding_box.intersects(box):
                     ret += self.__search(x, box,origin,radius)
         return ret
-        
-        
-   
-    def __dist(a,b):
+
+    # N-dimensional distance function
+    def __dist(a, b):
         return np.linalg.norm(b-a)
 
 def main():

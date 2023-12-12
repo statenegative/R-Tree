@@ -85,8 +85,8 @@ class Page:
                         upper = np.maximum(a, b)
                     else:
                         # Calculate new area
-                        lower = np.minimum(a.lower, b.lower)
-                        upper = np.maximum(a.upper, b.upper)
+                        lower = np.minimum(a.bounding_box.lower, b.bounding_box.lower)
+                        upper = np.maximum(a.bounding_box.upper, b.bounding_box.upper)
                     # Calculate area and save if it's a new maximum
                     area = np.prod(upper - lower)
                     if area > max_area:
@@ -110,8 +110,8 @@ class Page:
                     enlargement_a = page_a.bounding_box.test_point_enlargement(entry) - area_a
                     enlargement_b = page_a.bounding_box.test_point_enlargement(entry) - area_b
                 else:
-                    enlargement_a = page_a.bounding_box.test_box_enlargement(entry) - area_a
-                    enlargement_b = page_a.bounding_box.test_box_enlargement(entry) - area_b
+                    enlargement_a = page_a.bounding_box.test_box_enlargement(entry.bounding_box) - area_a
+                    enlargement_b = page_a.bounding_box.test_box_enlargement(entry.bounding_box) - area_b
                 
                 # Add entry to the better page
                 if enlargement_a < enlargement_b:
@@ -121,6 +121,7 @@ class Page:
         
         # Update pages
         self.entries = page_a.entries
+        self.bounding_box = page_a.bounding_box
         return page_b
     
     def __setitem__(self, key: typing.Union[Point, "Page"], val: typing.Any=None):
