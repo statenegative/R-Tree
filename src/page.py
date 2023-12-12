@@ -49,25 +49,79 @@ class Page:
             return []
 
         # Find all children that this point is contained within
-        min_enlargement = np.inf
+        min_area = np.inf
         min_page = self.entries[0][0]
         for page, _ in self.entries[1:]:
             # If an exact match is found, return immediately
             if point in page.bounding_box:
                 return page
             # Calculate increase in area
-            area = page.bounding_box.test_enlargement(point)
-            if area < min_enlargement:
-                min_enlargement = area
+            area = page.bounding_box.test_point_enlargement(point)
+            if area < min_area:
+                min_area = area
                 min_page = page
         
         return min_page
     
     # Splits this page, returning the newly split page.
+    # This uses quadratic split, finding the two worst rectangles to put in a node
+    # together, using them for the two children.
     #
     # Returns a new page containing the entries that have been removed from this page.
     def split(self) -> "Page":
-        pass
+        max_area = -np.inf
+        max_pair = (0, 1)
+        for i in range(len(self.entries)):
+            for j in range(len(self.entries)):
+                # Get entries
+                a = self.entries[i][0]
+                b = self.entries[j][0]
+
+                if a is not b:
+                    # Handle point and bounding box calculations separately
+                    if self.leaf:
+                        # Calculate new area
+                        lower = np.minimum(a, b)
+                        upper = np.maximum(a, b)
+                    else:
+                        # Calculate new area
+                        lower = np.minimum(a.lower, b.lower)
+                        upper = np.maximum(a.upper, b.upper)
+                    # Calculate area and save if it's a new maximum
+                    area = np.prod(upper - lower)
+                    if area > max_area:
+                        max_area = area
+                        max_pair = (i, j)
+        
+        # Perform split
+        a = self.entries[max_pair[0]][0]
+        b = self.entries[max_pair[1]][0]
+        page_a = Page(self.shape, self.leaf)
+        page_b = Page(self.shape, self.leaf)
+        page_a.add(a)
+        page_b.add(b)
+
+        # Examine all entries
+        for entry, _ in self.entries:
+            if entry is not a and entry is not b:
+                area_a = page_a.bounding_box.area()
+                area_b = page_b.bounding_box.area()
+                if self.leaf:
+                    enlargement_a = page_a.bounding_box.test_point_enlargement(entry) - area_a
+                    enlargement_b = page_a.bounding_box.test_point_enlargement(entry) - area_b
+                else:
+                    enlargement_a = page_a.bounding_box.test_box_enlargement(entry) - area_a
+                    enlargement_b = page_a.bounding_box.test_box_enlargement(entry) - area_b
+                
+                # Add entry to the better page
+                if enlargement_a < enlargement_b:
+                    page_a.add(entry)
+                else:
+                    page_b.add(entry)
+        
+        # Update pages
+        self.entries = page_a.entries
+        return page_b
     
     def __setitem__(self, key: typing.Union[Point, "Page"], val: typing.Any=None):
         self.add(key, val)

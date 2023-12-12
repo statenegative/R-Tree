@@ -42,20 +42,26 @@ class BoundingBox:
     def area(self) -> float:
         return np.prod(self.upper - self.lower)
     
-    # Calculates the amount the area of this bounding box would increase by if point
+    # Calculates the amount the area of this bounding box would increase to if point
     # were added to it.
     #
     # point: The point to test.
-    # Returns the increase in area.
-    def test_enlargement(self, point: Point) -> float:
-        old_area = self.area()
-
+    # Returns the new theoretical area.
+    def test_point_enlargement(self, point: Point) -> float:
         # Calculate new lower and upper bounds
         lower = np.minimum(self.lower, point)
         upper = np.maximum(self.upper, point)
-        new_area = np.prod(upper - lower)
-
-        return new_area - old_area
+        return np.prod(upper - lower)
+    
+    # Calculates the amount the area of this bounding box would increase to if point
+    # were added to it.
+    #
+    # box: The box to test.
+    # Returns the new theoretical area.
+    def test_box_enlargement(self, box: BoundingBox) -> float:
+        lower = np.minimum(self.lower, box.lower)
+        upper = np.maximum(self.upper, box.upper)
+        return np.prod(upper - lower)
 
     # Checks if a point is contained within this bounding box.
     #
