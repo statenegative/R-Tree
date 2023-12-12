@@ -62,19 +62,20 @@ class R_Tree:
             return len(page) > self.M
     
     # Displays a 2D visualization of the R-tree.
-    def show2D(self):
+    def show2D(self, draw_boxes: bool=True):
         if self.shape == (2,):
-            self.__show2D(self.root)
+            self.__show2D(self.root, draw_boxes)
             plt.show()
     
     # Recursive backend of show2D
-    def __show2D(self, page: Page):
+    def __show2D(self, page: Page, draw_boxes: bool):
         # Display bounding box
         bb = page.bounding_box
-        plt.plot((bb.lower[0], bb.upper[0]), (bb.lower[1], bb.lower[1]), 'k-')
-        plt.plot((bb.lower[0], bb.lower[0]), (bb.lower[1], bb.upper[1]), 'k-')
-        plt.plot((bb.upper[0], bb.upper[0]), (bb.lower[1], bb.upper[1]), 'k-')
-        plt.plot((bb.lower[0], bb.upper[0]), (bb.upper[1], bb.upper[1]), 'k-')
+        if draw_boxes:
+            plt.plot((bb.lower[0], bb.upper[0]), (bb.lower[1], bb.lower[1]), 'k-')
+            plt.plot((bb.lower[0], bb.lower[0]), (bb.lower[1], bb.upper[1]), 'k-')
+            plt.plot((bb.upper[0], bb.upper[0]), (bb.lower[1], bb.upper[1]), 'k-')
+            plt.plot((bb.lower[0], bb.upper[0]), (bb.upper[1], bb.upper[1]), 'k-')
 
         # Base case
         if page.leaf:
@@ -82,7 +83,7 @@ class R_Tree:
                 plt.plot(point[0], point[1], 'ko')
         else:
             for child, _ in page.entries:
-                self.__show2D(child)
+                self.__show2D(child, draw_boxes)
     
     def __setitem__(self, key: Point, val: typing.Any=None):
         self.add(key, val)
@@ -94,28 +95,29 @@ class R_Tree:
     def __str__(self) -> str:
         return f"R_Tree({self.size}, {self.root})"
     
-    def search(self, radius, origin):
-
+    def search(self, radius: float, origin: Point):
         #this doesnt make help me
         upper = origin + radius
         lower = origin - radius
+        print(lower, upper)
         box = BoundingBox(lower, upper)
         return self.__search(self.root,box,origin,radius)
 
-
     # Private workhorse function
-    def __search(self, page: Page, box, origin, radius):
+    def __search(self, page: Page, box: BoundingBox, origin: Point, radius: float):
+        print(box)
+        # Base case
         if page.leaf:
             ret = []
             for point,_ in page.entries:
                 if R_Tree.__dist(origin, point) <= radius:
                     ret.append(point)
             return ret
-                   
+
         # If it intersects run through all its children
         ret = []
         if page.bounding_box.intersects(box):
-            for x,_ in page.entries:
+            for x, _ in page.entries:
                 if x.bounding_box.intersects(box):
                     ret += self.__search(x, box,origin,radius)
         return ret
