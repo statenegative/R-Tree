@@ -34,9 +34,12 @@ class BoundingBox:
     #
     # other: The other bounding box to check.
     def intersects(self, other: "BoundingBox") -> bool:
-        intersects_lower = (self.lower >= other.lower) & (self.lower <= other.upper)
-        intersects_upper = (self.upper >= other.upper) & (self.upper <= other.upper)
-        return all(intersects_lower | intersects_upper)
+        intersects_lower1 = (self.lower >= other.lower) & (self.lower <= other.upper)
+        intersects_upper1 = (self.upper >= other.upper) & (self.upper <= other.upper)
+        intersects_lower2 = (other.lower >= self.lower) & (other.lower <= self.upper)
+        intersects_upper2 = (other.upper >= self.upper) & (other.upper <= self.upper)
+
+        return all(intersects_lower1 | intersects_upper1 | intersects_lower2 | intersects_upper2)
 
     # Calculates the area of this bounding box.
     def area(self) -> float:
